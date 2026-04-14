@@ -1,0 +1,2 @@
+# Runtime deps kept minimal so the advisor works offline with bundled
+# sample data. Add pybaseball / requests when wiring a real data feed.
