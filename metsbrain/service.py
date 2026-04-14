@@ -11,7 +11,7 @@ from datetime import datetime
 from . import analysis
 from .advisor import recommend
 from .data import SampleDataProvider
-from .models import LoggedBet, Recommendation
+from .models import Game, LoggedBet, OfferedLine, Recommendation
 from .odds import net_profit_per_unit
 from .store import Store
 
@@ -31,6 +31,39 @@ class Service:
             bankroll=bankroll, weekly_goal=weekly_goal, risk=risk
         )
 
+    # --- game + odds helpers -------------------------------------------------
+
+    def upcoming_games(self) -> list[Game]:
+        """Games from the data provider, with DB-stored odds overlaid."""
+        games = self.data_provider.upcoming_games()
+        for g in games:
+            overrides = self.store.list_offered_lines(g.game_id)
+            if not overrides:
+                continue
+            key = lambda ln: (ln.market, ln.side, ln.player, ln.threshold)
+            merged = {key(ln): ln for ln in g.offered}
+            for ov in overrides:
+                merged[key(ov)] = ov
+            g.offered = list(merged.values())
+        return games
+
+    def enter_odds(
+        self,
+        *,
+        game_id: str,
+        market: str,
+        side: str,
+        american_odds: int,
+        player: str | None = None,
+        threshold: float | None = None,
+        line: float | None = None,
+    ) -> None:
+        self.store.upsert_offered_line(
+            game_id=game_id, market=market, side=side,
+            american_odds=american_odds,
+            player=player, threshold=threshold, line=line,
+        )
+
     # --- advise --------------------------------------------------------------
 
     def advise(self, *, persist: bool = True) -> list[Recommendation]:
@@ -43,7 +76,7 @@ class Service:
         days_left = self.store.days_remaining_in_week()
         starting = self.store.current_week_starting_bankroll()
 
-        games = self.data_provider.upcoming_games()
+        games = self.upcoming_games()
 
         if persist:
             for g in games:

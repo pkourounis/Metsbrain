@@ -1,0 +1,101 @@
+/* Minimal, phone-friendly. No framework, no dark mode toggle. */
+
+:root {
+  --bg: #0b1020;
+  --panel: #141a30;
+  --ink: #e7ecf5;
+  --muted: #8a94ad;
+  --accent: #ff5a1f;   /* Mets orange */
+  --accent2: #1e3a8a;  /* Mets blue  */
+  --up: #58d38b;
+  --down: #ff6b6b;
+  --low: #58d38b;
+  --medium: #f6c85f;
+  --high: #ff6b6b;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+header {
+  padding: 12px 16px;
+  background: var(--accent2);
+  display: flex; align-items: center; gap: 16px;
+  position: sticky; top: 0; z-index: 2;
+}
+header h1 { margin: 0; font-size: 20px; }
+header h1 a { color: var(--accent); text-decoration: none; letter-spacing: 0.5px; }
+header nav { margin-left: auto; display: flex; gap: 14px; }
+header nav a { color: var(--ink); text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+header nav a:hover { background: rgba(255,255,255,0.08); }
+
+main { padding: 16px; max-width: 900px; margin: 0 auto; }
+
+.summary {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  background: var(--panel); padding: 12px 14px; border-radius: 8px; margin-bottom: 16px;
+}
+.summary .label { color: var(--muted); margin-right: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.up { color: var(--up); }
+.down { color: var(--down); }
+
+.banner {
+  background: var(--accent); color: #1a0a00;
+  padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-weight: 600;
+}
+
+.rec {
+  background: var(--panel); border-radius: 10px; padding: 14px; margin-bottom: 14px;
+  border-left: 4px solid var(--muted);
+}
+.rec.risk-low    { border-left-color: var(--low); }
+.rec.risk-medium { border-left-color: var(--medium); }
+.rec.risk-high   { border-left-color: var(--high); }
+.rec header { margin-bottom: 8px; }
+.rec .game { font-weight: 600; }
+.rec .date { color: var(--muted); font-weight: 400; }
+.rec .market { color: var(--ink); margin-top: 2px; }
+
+.metrics { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0; }
+.metrics .bucket { padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.08); font-size: 12px; }
+.metrics .stake { margin-left: auto; color: var(--accent); }
+
+.rationale { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
+.rationale li { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+
+.log-form, .settle-form, .odds-form { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.odds-form { flex-direction: column; align-items: stretch; }
+.log-form label, .odds-form label { display: flex; flex-direction: column; color: var(--muted); font-size: 12px; gap: 4px; }
+input[type="number"], input[type="text"], select {
+  padding: 8px 10px; border-radius: 6px; border: 1px solid #2a3352;
+  background: #0e1426; color: var(--ink); min-width: 120px;
+}
+button {
+  padding: 8px 14px; border-radius: 6px; border: 0;
+  background: var(--accent); color: #1a0a00; font-weight: 600; cursor: pointer;
+}
+button.loss { background: var(--down); color: #140505; }
+button.push { background: var(--muted); color: #060a14; }
+button.win  { background: var(--up); color: #042414; }
+
+table.bets { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+table.bets th, table.bets td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #2a3352; font-size: 14px; }
+table.bets th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+table.bets tr.up td { color: var(--up); }
+table.bets tr.down td { color: var(--down); }
+
+.empty { color: var(--muted); font-style: italic; }
+.hint { color: var(--muted); font-size: 14px; }
+
+.game-list { list-style: none; padding: 0; }
+.game-list li { margin-bottom: 8px; }
+.game-list a {
+  display: block; padding: 12px 14px; background: var(--panel);
+  border-radius: 8px; color: var(--ink); text-decoration: none;
+}
+.game-list a:hover { background: #1b2340; }
+.game-list span { color: var(--muted); margin-left: 6px; }
+
+h2 { margin-top: 24px; font-size: 18px; }
+h3 { margin-top: 18px; font-size: 16px; color: var(--muted); }

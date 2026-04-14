@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Today — Metsbrain{% endblock %}
+{% block content %}
+
+<section class="summary">
+  <div><span class="label">Bankroll</span> ${{ "%.2f"|format(summary.bankroll) }}</div>
+  <div><span class="label">Week profit</span>
+    <span class="{{ 'up' if summary.week_profit >= 0 else 'down' }}">
+      {{ '+' if summary.week_profit >= 0 else '' }}${{ "%.2f"|format(summary.week_profit) }}
+    </span>
+    of ${{ "%.2f"|format(summary.weekly_goal) }}
+  </div>
+  <div><span class="label">Risk</span> {{ summary.risk_tolerance }}</div>
+  <div><span class="label">Days left</span> {{ summary.days_remaining }}</div>
+</section>
+
+{% if banner %}<div class="banner">{{ banner }}</div>{% endif %}
+
+{% if recs %}
+  {% for r in recs %}
+    <article class="rec risk-{{ r.risk_bucket }}">
+      <header>
+        <div class="game">{{ r.game_id }} <span class="date">({{ r.game_date }})</span></div>
+        <div class="market">
+          {{ r.market }}
+          {% if r.line is not none %}({{ '%+g'|format(r.line) }}){% endif %}
+          {% if r.player %}— {{ r.player }}{% endif %}
+          {% if r.threshold is not none %}@ {{ r.threshold }}{% endif %}
+          — <strong>{{ r.side }}</strong>
+        </div>
+      </header>
+      <div class="metrics">
+        <span>Odds <strong>{{ '+' + r.american_odds|string if r.american_odds > 0 else r.american_odds }}</strong></span>
+        <span>Model <strong>{{ "%.1f%%"|format(r.model_prob * 100) }}</strong></span>
+        <span>Implied {{ "%.1f%%"|format(r.implied_prob * 100) }}</span>
+        <span>Edge <strong>{{ "%.1f%%"|format(r.edge * 100) }}</strong></span>
+        <span class="bucket">{{ r.risk_bucket }}</span>
+        <span class="stake">Stake <strong>${{ "%.2f"|format(r.stake) }}</strong></span>
+      </div>
+      <ul class="rationale">
+        {% for note in r.rationale %}<li>{{ note }}</li>{% endfor %}
+      </ul>
+      <form action="/log-bet" method="post" class="log-form">
+        <input type="hidden" name="game_id" value="{{ r.game_id }}">
+        <input type="hidden" name="market" value="{{ r.market }}">
+        <input type="hidden" name="side" value="{{ r.side }}">
+        <input type="hidden" name="american_odds" value="{{ r.american_odds }}">
+        {% if r.line is not none %}<input type="hidden" name="line" value="{{ r.line }}">{% endif %}
+        {% if r.player %}<input type="hidden" name="player" value="{{ r.player }}">{% endif %}
+        {% if r.threshold is not none %}<input type="hidden" name="threshold" value="{{ r.threshold }}">{% endif %}
+        <label>Stake
+          <input type="number" name="stake" step="0.01" min="0" value="{{ '%.2f'|format(r.stake) }}" required>
+        </label>
+        <button type="submit">Log bet</button>
+      </form>
+    </article>
+  {% endfor %}
+{% else %}
+  {% if not banner %}
+    <p class="empty">No +EV plays at your risk tolerance right now. Sit on your wallet.</p>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

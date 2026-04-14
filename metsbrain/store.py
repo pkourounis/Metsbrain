@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from typing import Iterator, Optional
 
-from .models import LoggedBet, Recommendation
+from .models import LoggedBet, OfferedLine, Recommendation
 
 
 SCHEMA = """
@@ -263,6 +263,66 @@ class Store:
         anchor = date.fromisoformat(this_monday())
         end = anchor + timedelta(days=6)
         return max(0, (end - date.today()).days)
+
+    # --- offered lines (manual odds entry) ----------------------------------
+
+    def upsert_offered_line(
+        self,
+        *,
+        game_id: str,
+        market: str,
+        side: str,
+        american_odds: int,
+        player: str | None = None,
+        threshold: float | None = None,
+        line: float | None = None,
+    ) -> int:
+        """Insert-or-update a line keyed by (game_id, market, side, player, threshold).
+
+        SQLite NULL isn't equal to NULL in plain `=`, so we use IFNULL with
+        sentinels to get consistent upsert behavior on prop markets.
+        """
+        now = datetime.now().isoformat(timespec="seconds")
+        with self.tx() as c:
+            row = c.execute(
+                "SELECT id FROM offered_lines "
+                "WHERE game_id=? AND market=? AND side=? "
+                "  AND IFNULL(player, '') = IFNULL(?, '') "
+                "  AND IFNULL(threshold, -99999) = IFNULL(?, -99999)",
+                (game_id, market, side, player, threshold),
+            ).fetchone()
+            if row:
+                c.execute(
+                    "UPDATE offered_lines SET american_odds=?, line=?, entered_at=? "
+                    "WHERE id=?",
+                    (american_odds, line, now, row["id"]),
+                )
+                return int(row["id"])
+            cur = c.execute(
+                "INSERT INTO offered_lines("
+                " game_id, market, side, player, threshold, american_odds, line, entered_at"
+                ") VALUES (?,?,?,?,?,?,?,?)",
+                (game_id, market, side, player, threshold, american_odds, line, now),
+            )
+            return int(cur.lastrowid)
+
+    def list_offered_lines(self, game_id: str) -> list[OfferedLine]:
+        rows = self._conn.execute(
+            "SELECT market, side, american_odds, line, player, threshold "
+            "FROM offered_lines WHERE game_id = ? ORDER BY id ASC",
+            (game_id,),
+        ).fetchall()
+        return [
+            OfferedLine(
+                market=r["market"],
+                side=r["side"],
+                american_odds=r["american_odds"],
+                line=r["line"],
+                player=r["player"],
+                threshold=r["threshold"],
+            )
+            for r in rows
+        ]
 
 
 def _row_to_bet(row: sqlite3.Row) -> LoggedBet:

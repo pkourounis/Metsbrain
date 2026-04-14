@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Enter odds — Metsbrain{% endblock %}
+{% block content %}
+
+<h2>Upcoming Mets games</h2>
+<p class="hint">Pick a game to enter or override sportsbook odds. The advisor
+merges your entries on top of the default lines.</p>
+
+{% if games %}
+<ul class="game-list">
+  {% for g in games %}
+  <li>
+    <a href="/enter-odds/{{ g.game_id }}">
+      <strong>{{ g.game_id }}</strong>
+      <span>({{ g.date }}) vs {{ g.opponent }}{% if g.context.home %} — home{% else %} — away{% endif %}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="empty">No upcoming games from the data provider.</p>
+{% endif %}
+
+{% endblock %}

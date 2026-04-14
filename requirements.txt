@@ -1,2 +1,9 @@
-# Runtime deps kept minimal so the advisor works offline with bundled
-# sample data. Add pybaseball / requests when wiring a real data feed.
+# Runtime
+fastapi>=0.110
+jinja2>=3.1
+uvicorn>=0.25
+python-multipart>=0.0.9
+
+# Test
+pytest>=8.0
+httpx>=0.27

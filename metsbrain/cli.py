@@ -141,6 +141,18 @@ def cmd_week(args, paths: AppPaths) -> int:
     return 0
 
 
+def cmd_serve(args, paths: AppPaths) -> int:
+    # Deferred imports so CLI startup doesn't pay FastAPI import cost.
+    import uvicorn
+
+    from .web import create_app
+
+    app = create_app(paths)
+    print(f"Metsbrain web UI on http://{args.host}:{args.port}")
+    uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
+    return 0
+
+
 def cmd_status(args, paths: AppPaths) -> int:
     svc = _service(paths)
     s = svc.week_summary()
@@ -191,6 +203,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     pt = sub.add_parser("status", help="One-line status summary")
     pt.set_defaults(func=cmd_status)
+
+    psv = sub.add_parser("serve", help="Launch the local web UI")
+    psv.add_argument("--host", default="127.0.0.1")
+    psv.add_argument("--port", type=int, default=8765)
+    psv.set_defaults(func=cmd_serve)
 
     return p
 

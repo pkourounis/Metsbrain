@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Week — Metsbrain{% endblock %}
+{% block content %}
+
+<section class="summary">
+  <div><span class="label">Week of</span> {{ summary.week_anchor }}</div>
+  <div><span class="label">Bankroll</span> ${{ "%.2f"|format(summary.bankroll) }}
+    <small>(started ${{ "%.2f"|format(summary.starting_bankroll) }})</small>
+  </div>
+  <div><span class="label">Goal</span> ${{ "%.2f"|format(summary.weekly_goal) }}</div>
+  <div><span class="label">Week profit</span>
+    <span class="{{ 'up' if summary.week_profit >= 0 else 'down' }}">
+      {{ '+' if summary.week_profit >= 0 else '' }}${{ "%.2f"|format(summary.week_profit) }}
+    </span>
+  </div>
+  <div><span class="label">Risk on open</span> ${{ "%.2f"|format(summary.open_risk) }}</div>
+  <div><span class="label">Days left</span> {{ summary.days_remaining }}</div>
+</section>
+
+<h2>Open bets</h2>
+{% if summary.open_bets %}
+<table class="bets">
+  <thead><tr><th>#</th><th>Game</th><th>Market</th><th>Side</th><th>Odds</th><th>Stake</th><th>Settle</th></tr></thead>
+  <tbody>
+  {% for b in summary.open_bets %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.game_id }}</td>
+      <td>
+        {{ b.market }}
+        {% if b.line is not none %}({{ '%+g'|format(b.line) }}){% endif %}
+        {% if b.player %}— {{ b.player }}{% endif %}
+        {% if b.threshold is not none %}@ {{ b.threshold }}{% endif %}
+      </td>
+      <td>{{ b.side }}</td>
+      <td>{{ '+' + b.american_odds|string if b.american_odds > 0 else b.american_odds }}</td>
+      <td>${{ "%.2f"|format(b.stake) }}</td>
+      <td>
+        <form action="/settle/{{ b.id }}" method="post" class="settle-form">
+          <button name="result" value="win" type="submit" class="win">Win</button>
+          <button name="result" value="loss" type="submit" class="loss">Loss</button>
+          <button name="result" value="push" type="submit" class="push">Push</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">No open bets.</p>
+{% endif %}
+
+<h2>Recent settled (last 10)</h2>
+{% if recent_settled %}
+<table class="bets">
+  <thead><tr><th>#</th><th>Game</th><th>Market</th><th>Side</th><th>Stake</th><th>Result</th><th>Payout</th></tr></thead>
+  <tbody>
+  {% for b in recent_settled %}
+    <tr class="{{ 'up' if b.payout > 0 else ('down' if b.payout < 0 else '') }}">
+      <td>{{ b.id }}</td>
+      <td>{{ b.game_id }}</td>
+      <td>{{ b.market }}</td>
+      <td>{{ b.side }}</td>
+      <td>${{ "%.2f"|format(b.stake) }}</td>
+      <td>{{ b.result }}</td>
+      <td>{{ '+' if b.payout > 0 else '' }}${{ "%.2f"|format(b.payout) }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Nothing settled this week.</p>
+{% endif %}
+
+{% endblock %}

@@ -17,18 +17,18 @@ pip install -r requirements.txt
 # one-time: set bankroll + weekly goal + risk tolerance
 python -m metsbrain init --bankroll 1000 --weekly-goal 150 --risk medium
 
-# see recommended bets for upcoming Mets games (uses bundled sample data)
+# local web UI (phone browser friendly) → http://127.0.0.1:8765
+python -m metsbrain serve
+
+# or use the CLI directly
 python -m metsbrain advise
-
-# after you place a bet, log it
 python -m metsbrain log-bet --game NYM-vs-PHI-2026-04-15 --market moneyline --side NYM --odds -120 --stake 22
-
-# settle a bet once the game is final
 python -m metsbrain settle --id 3 --result win
-
-# check your week
 python -m metsbrain week
 ```
+
+State lives in a local `.metsbrain.db` SQLite file. Single user, no network
+access required, nothing leaves your machine.
 
 ## How bets are evaluated
 
